@@ -127,7 +127,12 @@ mod arch {
         command.arg("cargo-flamegraph.stacks");
 
         match workload {
-            Workload::Command(c) => {
+            Workload::Command(mut c) => {
+                // dtrace does not preserve quoting in the string passed via -c, so to pass along
+                // multi-word arguments we need to escape any whitespace within each arg.
+                for arg in c[1..].iter_mut() {
+                    *arg = arg.replace(" ", "\\ ")
+                }
                 command.arg("-c");
                 command.arg(&c.join(" "));
             }
